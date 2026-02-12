@@ -1,78 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Book Your Package | Instastrategix</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secure Checkout | Instastrategix</title>
 
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
-
-    <!-- Stripe -->
-    <script src="https://js.stripe.com/v3/"></script>
-
-    <!-- CSS -->
-    <link rel="stylesheet" href="payment.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/"></script>
+<link rel="stylesheet" href="payment.css">
 </head>
 <body>
 
-<section class="payment-hero">
-    <div class="overlay"></div>
-    <div class="container">
-        <h1>Choose Your Growth Package</h1>
-        <p>Strategic digital marketing systems built for measurable revenue growth.</p>
-    </div>
-</section>
+<section class="checkout-wrapper">
+    <div class="container checkout-grid">
 
-<section class="pricing-section">
-    <div class="container pricing-grid">
+        <!-- LEFT: FORM -->
+        <div class="checkout-form">
+            <h2>Client Information</h2>
 
-        <!-- Starter -->
-        <div class="pricing-card">
-            <h3>Starter</h3>
-            <div class="price">$499</div>
-            <ul>
-                <li>SEO Foundation Setup</li>
-                <li>Keyword Strategy</li>
-                <li>On-Page Optimization</li>
-                <li>1 Month Support</li>
-            </ul>
-            <button onclick="startPayment('starter')" class="btn-primary">
-                Get Started
-            </button>
+            <form id="payment-form">
+
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Business Name</label>
+                    <input type="text" id="business">
+                </div>
+
+                <div class="form-group">
+                    <label>Select Package</label>
+                    <select id="package" required>
+                        <option value="">Choose Package</option>
+                        <option value="starter">Starter - $499</option>
+                        <option value="growth">Growth - $999</option>
+                        <option value="scale">Scale - $1999</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-primary">
+                    Proceed to Secure Payment
+                </button>
+
+                <div id="loading" class="loading hidden">
+                    Processing...
+                </div>
+
+            </form>
         </div>
 
-        <!-- Growth -->
-        <div class="pricing-card featured">
-            <div class="badge">Most Popular</div>
-            <h3>Growth</h3>
-            <div class="price">$999</div>
-            <ul>
-                <li>Advanced SEO</li>
-                <li>Paid Ads Setup</li>
-                <li>Content Strategy</li>
-                <li>Conversion Optimization</li>
-                <li>3 Months Support</li>
-            </ul>
-            <button onclick="startPayment('growth')" class="btn-primary">
-                Scale Now
-            </button>
-        </div>
-
-        <!-- Scale -->
-        <div class="pricing-card">
-            <h3>Scale</h3>
-            <div class="price">$1999</div>
-            <ul>
-                <li>Full Marketing System</li>
-                <li>Ads + SEO + Social</li>
-                <li>Authority Content</li>
-                <li>Funnel Optimization</li>
-                <li>6 Months Support</li>
-            </ul>
-            <button onclick="startPayment('scale')" class="btn-primary">
-                Dominate Market
-            </button>
+        <!-- RIGHT: SUMMARY -->
+        <div class="order-summary">
+            <h3>Order Summary</h3>
+            <p id="summary-package">No package selected</p>
+            <p id="summary-price">$0</p>
+            <hr>
+            <p class="secure-text">🔒 Secured by Stripe</p>
         </div>
 
     </div>
