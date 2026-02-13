@@ -1,57 +1,59 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const services = document.querySelectorAll('input[type="checkbox"]');
+  const checkboxes = document.querySelectorAll('input[type="checkbox"]');
   const totalSpan = document.getElementById('total-amount');
   const payBtn = document.getElementById('pay-btn');
+  const loading = document.getElementById('loading');
   let total = 0;
 
-  // Update total when checkboxes change
-  services.forEach(service => {
-    service.addEventListener('change', () => {
-      total = 0;
-      services.forEach(s => {
-        if (s.checked) {
-          total += parseInt(s.dataset.price);
-        }
-      });
-      totalSpan.textContent = total.toLocaleString('en-IN'); // Indian comma formatting
+  // Update total
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', () => {
+      total = Array.from(checkboxes)
+        .filter(c => c.checked)
+        .reduce((sum, c) => sum + parseInt(c.dataset.price), 0);
+      
+      totalSpan.textContent = total.toLocaleString('en-IN');
       payBtn.disabled = total === 0;
     });
   });
 
-  // Handle Pay button click
+  // Pay button
   payBtn.addEventListener('click', async () => {
     const name = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
 
     if (!name || !email || !phone || total === 0) {
-      alert('Please fill in all details and select at least one service.');
+      alert('Please fill all details and select at least one service.');
       return;
     }
 
+    payBtn.disabled = true;
+    loading.style.display = 'block';
+
     try {
-      // Step 1: Create order on your backend
-      const orderResponse = await fetch('https://your-backend-url.onrender.com/create-order', {
+      // Create order
+      const orderRes = await fetch('https://your-backend-url.onrender.com/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: total * 100 }) // Razorpay expects paise
+        body: JSON.stringify({ amount: total * 100 })
       });
 
-      if (!orderResponse.ok) throw new Error('Order creation failed');
+      if (!orderRes.ok) throw new Error('Failed to create order');
 
-      const orderData = await orderResponse.json();
+      const orderData = await orderRes.json();
 
-      // Step 2: Open Razorpay checkout
+      // Razorpay options
       const options = {
-        key: 'YOUR_RAZORPAY_KEY_ID', // Replace with your Razorpay test/live key
+        key: 'YOUR_RAZORPAY_TEST_KEY',
         amount: total * 100,
         currency: 'INR',
         name: 'Instastrategix',
-        description: 'Monthly Digital Marketing Services',
+        description: 'Digital Marketing Services',
         order_id: orderData.order_id,
         handler: async (response) => {
-          // Step 3: Verify payment on backend
-          const verifyResponse = await fetch('https://your-backend-url.onrender.com/verify-payment', {
+          // Verify
+          const verifyRes = await fetch('https://your-backend-url.onrender.com/verify-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -61,36 +63,26 @@ document.addEventListener('DOMContentLoaded', () => {
             })
           });
 
-          const verifyData = await verifyResponse.json();
-
+          const verifyData = await verifyRes.json();
           if (verifyData.success) {
             window.location.href = 'success.html';
           } else {
-            alert('Payment verification failed. Please contact support.');
+            alert('Payment failed. Please try again.');
             window.location.href = 'failed.html';
           }
         },
-        prefill: {
-          name: name,
-          email: email,
-          contact: phone
-        },
-        theme: {
-          color: '#3399cc'
-        },
-        modal: {
-          ondismiss: () => {
-            alert('Payment cancelled. You can try again.');
-          }
-        }
+        prefill: { name, email, contact: phone },
+        theme: { color: '#3399cc' },
+        modal: { ondismiss: () => { payBtn.disabled = false; loading.style.display = 'none'; } }
       };
 
       const rzp = new Razorpay(options);
       rzp.open();
 
-    } catch (error) {
-      console.error(error);
-      alert('Something went wrong. Please try again or contact us.');
+    } catch (err) {
+      alert('Payment initiation failed. Please try again.');
+      payBtn.disabled = false;
+      loading.style.display = 'none';
     }
   });
 });
