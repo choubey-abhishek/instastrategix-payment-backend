@@ -5,35 +5,38 @@ const crypto = require('crypto');
 
 const app = express();
 app.use(express.json());
-app.use(cors());  // Allow your GitHub Pages domain
+app.use(cors());
 
-const rzp = new Razorpay({
-  key_id: 'YOUR_KEY_ID',
-  key_secret: 'YOUR_KEY_SECRET'
+// Replace with your actual Razorpay keys (use test keys first!)
+const razorpay = new Razorpay({
+  key_id: 'rzp_test_YourKeyIdHere',     // e.g., rzp_test_abc123
+  key_secret: 'YourKeySecretHere'       // Keep this secret!
 });
 
 app.post('/create-order', async (req, res) => {
   try {
-    const { amount } = req.body;
-    const order = await rzp.orders.create({
+    const { amount } = req.body; // amount in paise
+    const order = await razorpay.orders.create({
       amount: amount,
       currency: 'INR',
-      receipt: 'receipt_' + Date.now()
+      receipt: `receipt_${Date.now()}`
     });
     res.json({ order_id: order.id });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Order creation failed' });
   }
 });
 
 app.post('/verify-payment', (req, res) => {
   const { order_id, payment_id, signature } = req.body;
-  const expectedSignature = crypto.createHmac('sha256', 'YOUR_KEY_SECRET')
-    .update(order_id + '|' + payment_id)
-    .digest('hex');
+  const expectedSignature = crypto
+    .createHmac('sha256', 'YourKeySecretHere') // Same secret as above
+    .update(`${order_id}|${payment_id}`)
+    .update('hex');
 
   if (expectedSignature === signature) {
-    // Payment valid - save to DB here later
+    // Payment is genuine - you can save to DB here later
     res.json({ success: true });
   } else {
     res.json({ success: false });
@@ -41,4 +44,6 @@ app.post('/verify-payment', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
